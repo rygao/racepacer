@@ -15,7 +15,6 @@ export default function SplitsTable({ splits, unit }) {
             <th className="text-left px-3 py-2 font-semibold">{splitLabel}</th>
             <th className="text-right px-3 py-2 font-semibold">+Elev</th>
             <th className="text-right px-3 py-2 font-semibold">−Elev</th>
-            <th className="text-right px-3 py-2 font-semibold">Time</th>
             <th className="text-right px-3 py-2 font-semibold">Cum. Time</th>
             <th className="text-right px-3 py-2 font-semibold">Pace {paceLabel}</th>
             <th className="text-right px-3 py-2 font-semibold">GAP {paceLabel}</th>
@@ -51,7 +50,6 @@ export default function SplitsTable({ splits, unit }) {
                 <td className="px-3 py-2 text-right text-red-400 font-mono text-xs">
                   {s.elevLoss > 0 ? formatElevation(s.elevLoss, unit) : '—'}
                 </td>
-                <td className="px-3 py-2 text-right font-mono text-gray-700">{formatTime(s.time)}</td>
                 <td className="px-3 py-2 text-right font-mono text-gray-500">{formatTime(s.cumTime, true)}</td>
                 <td className={`px-3 py-2 text-right font-mono font-medium ${isUphill ? 'text-orange-500' : isDownhill ? 'text-blue-500' : 'text-gray-700'}`}>
                   {formatPace(s.actualPace, unit)}
@@ -72,7 +70,7 @@ export default function SplitsTable({ splits, unit }) {
             <td className="px-3 py-2 text-right font-mono">
               {splits.length > 0 ? formatTime(splits[splits.length - 1].cumTime, true) : '—'}
             </td>
-            <td colSpan={4} />
+            <td colSpan={3} />
           </tr>
         </tfoot>
       </table>

@@ -68,19 +68,30 @@ export function computePlan(rawPoints, goalTimeSecs, fade, unit = 'mi') {
   const basePace = goalTimeSecs / denominator;
   const avgGapPace = flatEquivDist > 0 ? goalTimeSecs / flatEquivDist : basePace;
 
-  // Assign segments to split buckets
+  // Assign segments to split buckets, interpolating at mile/km boundaries so
+  // every full split covers exactly splitLen meters.
   const splitMap = new Map();
   for (const seg of segments) {
-    const splitIdx = Math.floor(seg.cumDist / splitLen);
-    if (!splitMap.has(splitIdx)) {
-      splitMap.set(splitIdx, { dist: 0, elevGain: 0, elevLoss: 0, cost: 0, gapCost: 0 });
+    const segStart = seg.cumDist - seg.dist;
+    const firstIdx = Math.floor(segStart / splitLen);
+    const lastIdx = Math.floor(seg.cumDist / splitLen);
+
+    for (let splitIdx = firstIdx; splitIdx <= lastIdx; splitIdx++) {
+      const chunkStart = Math.max(segStart, splitIdx * splitLen);
+      const chunkEnd = Math.min(seg.cumDist, (splitIdx + 1) * splitLen);
+      if (chunkEnd <= chunkStart) continue; // zero-width at boundary, skip
+
+      const frac = (chunkEnd - chunkStart) / seg.dist;
+      if (!splitMap.has(splitIdx)) {
+        splitMap.set(splitIdx, { dist: 0, elevGain: 0, elevLoss: 0, cost: 0, gapCost: 0 });
+      }
+      const b = splitMap.get(splitIdx);
+      b.dist += frac * seg.dist;
+      if (seg.dEle > 0) b.elevGain += frac * seg.dEle;
+      else b.elevLoss += frac * -seg.dEle;
+      b.cost += frac * seg.dist * seg.mult * seg.fadeMult * basePace;
+      b.gapCost += frac * seg.dist * seg.fadeMult * basePace;
     }
-    const b = splitMap.get(splitIdx);
-    b.dist += seg.dist;
-    if (seg.dEle > 0) b.elevGain += seg.dEle;
-    else b.elevLoss += -seg.dEle;
-    b.cost += seg.dist * seg.mult * seg.fadeMult * basePace;
-    b.gapCost += seg.dist * seg.fadeMult * basePace;
   }
 
   const splitIndices = Array.from(splitMap.keys()).sort((a, b) => a - b);
