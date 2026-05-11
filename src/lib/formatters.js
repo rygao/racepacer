@@ -5,6 +5,7 @@ export const METERS_PER_KM = 1000;
  * Format seconds as H:MM:SS (omits hours if < 1h) or MM:SS.
  */
 export function formatTime(totalSeconds, forceHours = false) {
+  if (!isFinite(totalSeconds) || totalSeconds < 0) return '—';
   const s = Math.round(totalSeconds);
   const h = Math.floor(s / 3600);
   const m = Math.floor((s % 3600) / 60);
@@ -19,6 +20,7 @@ export function formatTime(totalSeconds, forceHours = false) {
  * Format pace in seconds/meter → "MM:SS /mi" or "MM:SS /km"
  */
 export function formatPace(secsPerMeter, unit = 'mi') {
+  if (!isFinite(secsPerMeter) || secsPerMeter <= 0) return '—';
   const multiplier = unit === 'mi' ? METERS_PER_MILE : METERS_PER_KM;
   const secsPerUnit = secsPerMeter * multiplier;
   const m = Math.floor(secsPerUnit / 60);
